@@ -12,7 +12,9 @@ function TextBox() {
         onChange={(e) => setText(e.target.value)}
         placeholder="Type something..."
       />
-      <p><strong>Output:</strong> {text}</p>
+      <p>
+        <strong>Output:</strong> {text}
+      </p>
     </div>
   );
 }

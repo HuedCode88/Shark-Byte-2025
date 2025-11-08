@@ -1,12 +1,9 @@
-import TextBox from './Components/InputText';
-import './App.css'
+import PdfUploader from "./Components/PdfUploader";
 
-function App() {
+export default function App() {
   return (
-    <div>
-      <TextBox />
+    <div className="App">
+      <PdfUploader />
     </div>
   );
 }
-
-export default App;
