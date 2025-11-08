@@ -1,34 +1,42 @@
 import express from "express";
 import multer from "multer";
 import fs from "fs";
-import { GoogleGenerativeAI } from "@google/generative-ai";
 import cors from "cors";
+import { GoogleGenerativeAI } from "@google/generative-ai";
 
 const app = express();
 const upload = multer({ dest: "uploads/" });
 const PORT = 5000;
 
-// Allow frontend requests
 app.use(cors());
 
+// Initialize Gemini client (demo-only)
 const genAI = new GoogleGenerativeAI("AIzaSyAKWoYNApR0Dd487a-eBh6-wWmdv23Qoco");
 
-app.post("/upload", upload.single("pdf"), async (req, res) => {
+app.post("/upload", upload.fields([
+  { name: "template", maxCount: 1 },
+  { name: "data", maxCount: 1 }
+]), async (req, res) => {
   try {
-    if (!req.file) return res.status(400).json({ error: "No PDF uploaded" });
+    const templateFile = req.files?.["template"]?.[0];
+    const dataFile = req.files?.["data"]?.[0];
 
-    const pdfData = fs.readFileSync(req.file.path);
-    const base64Data = pdfData.toString("base64");
+    if (!templateFile || !dataFile) 
+      return res.status(400).json({ error: "Both template and data PDFs are required" });
+
+    const templateBase64 = fs.readFileSync(templateFile.path).toString("base64");
+    const dataBase64 = fs.readFileSync(dataFile.path).toString("base64");
 
     const model = genAI.getGenerativeModel({ model: "gemini-2.5-pro" });
     const result = await model.generateContent([
-      { inlineData: { mimeType: "application/pdf", data: base64Data } },
-      { text: "Summarize this PDF like a boss 😎" },
+      { inlineData: { mimeType: "application/pdf", data: templateBase64 } },
+      { inlineData: { mimeType: "application/pdf", data: dataBase64 } },
+      { text: "Mimic the style of the first PDF and summarize content from the second PDF." }
     ]);
 
     res.json({ output: result.response.text() });
   } catch (err) {
-    console.error("Gemini Error:", err);
+    console.error("🔥 Backend Upload Error:", err);
     res.status(500).json({ error: "Gemini request failed" });
   }
 });
