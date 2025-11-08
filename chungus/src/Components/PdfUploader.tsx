@@ -34,25 +34,26 @@ export default function PdfUploader() {
   };
 
   return (
-    <div className="p-6 flex flex-col items-center">
-      <h1 className="text-2xl font-bold mb-4">PDF → Gemini Demo ⚡</h1>
+    <div className="uploader">
+
       <input
         type="file"
         accept="application/pdf"
         onChange={(e) => setFile(e.target.files?.[0] ?? null)}
-        className="mb-3"
+        className="file-input"
       />
+
       <button
         onClick={handleUpload}
         disabled={!file || loading}
-        className="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 disabled:opacity-50"
+        className="primary-btn"
       >
         {loading ? "Processing... 🌀" : "Send to Gemini 🚀"}
       </button>
 
-      <div className="mt-6 w-full max-w-2xl bg-gray-100 p-4 rounded-lg shadow">
-        <h2 className="font-semibold mb-2">Output 💬</h2>
-        <pre className="whitespace-pre-wrap">{output}</pre>
+      <div className="output-box">
+        <h2 className="output-title">Output 💬</h2>
+        <pre className="output-content">{output}</pre>
       </div>
     </div>
   );
