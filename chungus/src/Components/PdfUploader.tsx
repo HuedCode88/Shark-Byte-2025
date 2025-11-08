@@ -35,7 +35,6 @@ export default function PdfUploader() {
 
   return (
     <div className="uploader">
-
       <input
         type="file"
         accept="application/pdf"
