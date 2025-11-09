@@ -133,3 +133,27 @@
 @media (min-width: 768px) {
 	.card { padding: 2.5rem; }
 }
+
+/* Scroll-to-bottom floating button */
+.scroll-bottom-btn {
+	position: fixed;
+	right: 20px;
+	bottom: 20px;
+	width: 44px;
+	height: 44px;
+	border-radius: 999px;
+	background: #6b21a8; /* purple */
+	color: #fff;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	border: none;
+	box-shadow: 0 6px 18px rgba(0,0,0,0.18);
+	cursor: pointer;
+	transition: transform 160ms ease, background 160ms ease;
+	z-index: 9999;
+}
+.scroll-bottom-btn:hover { transform: translateY(-3px); background: #581c87 }
+.scroll-bottom-btn:active { transform: translateY(0px) }
+.scroll-bottom-btn svg { display: block; }
+
