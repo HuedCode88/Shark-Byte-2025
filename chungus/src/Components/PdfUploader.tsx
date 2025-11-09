@@ -39,18 +39,33 @@ export default function PdfUploader() {
 
   return (
     <div className="uploader">
-      <input
-        type="file"
-        accept="application/pdf"
-        onChange={(e) => setTemplateFile(e.target.files?.[0] ?? null)}
-        className="file-input"
-      />
-      <input
-        type="file"
-        accept="application/pdf"
-        onChange={(e) => setDataFile(e.target.files?.[0] ?? null)}
-        className="file-input"
-      />
+      <div className="input_container">
+        <input
+          id="template-input"
+          type="file"
+          accept="application/pdf"
+          onChange={(e) => setTemplateFile(e.target.files?.[0] ?? null)}
+          className="file-input"
+        />
+        <label htmlFor="template-input" className="file-label primary-btn">
+          {templateFile
+            ? `Template: ${templateFile.name}`
+            : "Choose Proposal Template 📑"}
+        </label>
+      </div>
+
+      <div className="input_container">
+        <input
+          id="data-input"
+          type="file"
+          accept="application/pdf"
+          onChange={(e) => setDataFile(e.target.files?.[0] ?? null)}
+          className="file-input"
+        />
+        <label htmlFor="data-input" className="file-label primary-btn">
+          {dataFile ? `RFP: ${dataFile.name}` : "Choose RFP 📩"}
+        </label>
+      </div>
 
       <button
         onClick={handleUpload}

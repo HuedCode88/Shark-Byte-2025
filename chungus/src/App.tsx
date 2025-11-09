@@ -8,7 +8,6 @@ export default function App() {
     <div className="page">
       <div className="card">
         <PdfTitle />
-        <MoneyInput />
         <PdfUploader />
       </div>
     </div>

@@ -7,7 +7,9 @@
 	align-items: center;
 	justify-content: center;
 	padding: 1.5rem; /* 24px */
-	background: #f8fafc; /* light gray */
+	background: linear-gradient(180deg,#f8fafc 0%, #ffffff 100%);
+	position: relative; /* for decorative background shapes */
+	overflow: hidden;
 }
 
 .card {
@@ -19,8 +21,39 @@
 	display: flex;
 	flex-direction: column;
 	align-items: center;
-	gap: 1.5rem;
+    justify-content: center;
+		gap: 1.5rem;
 	background: #ffffff;
+		position: relative;
+		z-index: 1; /* sit above decorative background */
+}
+
+/* Decorative blurred shapes behind the card to add depth */
+.page::before {
+	content: "";
+	position: absolute;
+	inset: 0; /* cover the page area so multiple gradients can be positioned by background-position */
+	pointer-events: none;
+	filter: blur(120px);
+	opacity: 0.75;
+	z-index: 0;
+	background-repeat: no-repeat;
+	background-image:
+		radial-gradient(circle at 18% 18%, rgba(99,102,241,0.95) 0%, rgba(139,92,246,0.7) 35%, transparent 60%),
+		radial-gradient(circle at 82% 28%, rgba(56,189,248,0.9) 0%, rgba(96,165,250,0.55) 35%, transparent 60%),
+		radial-gradient(circle at 50% 78%, rgba(236,72,153,0.9) 0%, rgba(249,115,22,0.45) 35%, transparent 60%);
+	background-size: 900px 900px, 800px 800px, 700px 700px;
+	background-position: 18% 18%, 82% 28%, 50% 78%;
+}
+
+/* Scale the decorative blobs down on small screens */
+@media (max-width: 768px) {
+	.page::before {
+		background-size: 420px 420px, 360px 360px, 320px 320px;
+		filter: blur(90px);
+		opacity: 0.55;
+		background-position: 10% 8%, 90% 22%, 50% 82%;
+	}
 }
 
 .uploader {
@@ -29,6 +62,7 @@
 	flex-direction: column;
 	align-items: center;
 	gap: 1rem;
+
 }
 
 .pdf-title {
@@ -37,14 +71,31 @@
 	margin-bottom: 0.5rem;
 }
 
-.file-input {
-  display: block;
-  width: min(100%, 30rem);  /* up to 20rem, scales down on small screens */
-  font-size: 0.9rem;
-  color: #374151;
-  padding: 0.25rem 0;
-  margin: 0 auto;
+.input_container{
+
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
+
+.file-input {
+	/* hide native file control; we trigger it with a styled label */
+	display: none;
+}
+
+.file-label {
+	display: inline-block;
+	background: #6b21a8;
+	color: #fff;
+	padding: 0.5rem 0.75rem;
+	border-radius: 0.5rem;
+	cursor: pointer;
+	font-size: 0.95rem;
+	text-align: center;
+}
+.file-label:hover { background: #581c87; }
+.file-name { margin-left: 0.75rem; font-size: 0.9rem; color: #374151; }
 
 
 .primary-btn {
@@ -65,6 +116,10 @@
 }
 
 .output-box {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-content: center;
   margin-top: 1rem;
   width: 100%;
   max-width: 40rem;
@@ -76,8 +131,10 @@
 }
 
 .output-title {
+  display: flex;
+  justify-content: center;
   font-weight: 600;
-  margin-bottom: 0.5rem;
+  margin-bottom: 0rem;
   margin-left: 0; /* remove the old left margin */
 }
 .output-content {
