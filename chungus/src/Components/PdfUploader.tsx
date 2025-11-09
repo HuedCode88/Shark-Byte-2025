@@ -5,6 +5,7 @@ export default function PdfUploader() {
   const [dataFile, setDataFile] = useState<File | null>(null);
   const [output, setOutput] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(false);
+  const [downloadUrl, setDownloadUrl] = useState<string | null>(null);
 
   const handleUpload = async () => {
     if (!templateFile || !dataFile) return alert("Both PDFs are required! 🕶️");
@@ -24,6 +25,7 @@ export default function PdfUploader() {
       const data = await res.json();
       if (res.ok) {
         setOutput(data.output);
+        setDownloadUrl(data.downloadUrl ?? null);
       } else {
         throw new Error(data.error || "Unknown server error");
       }
@@ -61,6 +63,18 @@ export default function PdfUploader() {
       <div className="output-box">
         <h2 className="output-title">Output 💬</h2>
         <pre className="output-content">{output}</pre>
+        {downloadUrl ? (
+          <div style={{ marginTop: 12 }}>
+            <a
+              href={downloadUrl}
+              className="primary-btn"
+              target="_blank"
+              rel="noreferrer"
+            >
+              Download text
+            </a>
+          </div>
+        ) : null}
       </div>
     </div>
   );

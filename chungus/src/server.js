@@ -1,6 +1,9 @@
 import express from "express";
 import multer from "multer";
 import fs from "fs";
+import os from "os";
+import path from "path";
+import crypto from "crypto";
 import cors from "cors";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
@@ -98,11 +101,47 @@ Avoid redundancy and ensure flow between sections.
       { text: prompt}
     ]);
 
-    res.json({ output: result.response.text() });
+    const outputText = result.response.text();
+
+    // write output to a temp file and return a download URL
+    try {
+      const filename = `reply-${Date.now()}-${crypto.randomUUID()}.txt`;
+      const tempDir = os.tmpdir();
+      const tempPath = path.join(tempDir, filename);
+      fs.writeFileSync(tempPath, outputText, "utf8");
+
+      // schedule deletion after TTL (5 minutes)
+      const TTL_MS = 5 * 60 * 1000;
+      setTimeout(() => {
+        try { fs.unlinkSync(tempPath); } catch (e) { /* ignore */ }
+      }, TTL_MS);
+
+      const downloadUrl = `${req.protocol}://${req.get('host')}/temp/${encodeURIComponent(filename)}`;
+      res.json({ output: outputText, downloadUrl });
+    } catch (fileErr) {
+      console.warn("Could not write temp file, returning inline output", fileErr?.message || fileErr);
+      res.json({ output: outputText });
+    }
   } catch (err) {
     console.error("🔥 Backend Upload Error:", err);
     res.status(500).json({ error: "Gemini request failed" });
   }
+});
+
+// Serve temp reply files from OS temp directory. Validate filename to avoid path traversal.
+app.get('/temp/:name', (req, res) => {
+  const name = req.params.name;
+  if (!/^[a-zA-Z0-9._\-]+$/.test(name)) return res.status(400).send('Invalid filename');
+  const filepath = path.join(os.tmpdir(), name);
+  if (!fs.existsSync(filepath)) return res.status(404).send('Not found');
+  res.download(filepath, name, (err) => {
+    if (err) {
+      console.warn('Error sending temp file', err);
+    } else {
+      // optional: delete after successful download
+      try { fs.unlinkSync(filepath); } catch (e) { /* ignore */ }
+    }
+  });
 });
 
 app.listen(PORT, () => console.log(`Server running on http://localhost:${PORT}`));
