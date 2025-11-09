@@ -1,17 +1,19 @@
 import { useState } from "react";
 
 export default function PdfUploader() {
-  const [file, setFile] = useState<File | null>(null);
+  const [templateFile, setTemplateFile] = useState<File | null>(null);
+  const [dataFile, setDataFile] = useState<File | null>(null);
   const [output, setOutput] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(false);
 
   const handleUpload = async () => {
-    if (!file) return alert("Pick a PDF first! 🕶️");
+    if (!templateFile || !dataFile) return alert("Both PDFs are required! 🕶️");
 
     setLoading(true);
     try {
       const formData = new FormData();
-      formData.append("pdf", file);
+      formData.append("template", templateFile);
+      formData.append("data", dataFile);
 
       // Send PDF to your backend server
       const res = await fetch("http://localhost:5000/upload", {
@@ -38,13 +40,19 @@ export default function PdfUploader() {
       <input
         type="file"
         accept="application/pdf"
-        onChange={(e) => setFile(e.target.files?.[0] ?? null)}
+        onChange={(e) => setTemplateFile(e.target.files?.[0] ?? null)}
+        className="file-input"
+      />
+      <input
+        type="file"
+        accept="application/pdf"
+        onChange={(e) => setDataFile(e.target.files?.[0] ?? null)}
         className="file-input"
       />
 
       <button
         onClick={handleUpload}
-        disabled={!file || loading}
+        disabled={!templateFile || !dataFile || loading}
         className="primary-btn"
       >
         {loading ? "Processing... 🌀" : "Send to Gemini 🚀"}
