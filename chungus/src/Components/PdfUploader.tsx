@@ -63,7 +63,9 @@ export default function PdfUploader() {
           className="file-input"
         />
         <label htmlFor="data-input" className="file-label primary-btn">
-          {dataFile ? `RFP: ${dataFile.name}` : "Choose RFP 📩"}
+          {dataFile
+            ? `RFP: ${dataFile.name}`
+            : "Submit Grant Proposal Request 📩"}
         </label>
       </div>
 
@@ -72,11 +74,20 @@ export default function PdfUploader() {
         disabled={!templateFile || !dataFile || loading}
         className="primary-btn"
       >
-        {loading ? "Processing... 🌀" : "Generate Proposal🔧"}
+        {loading ? (
+          <>
+            <span className="spinner" aria-hidden>
+              🌀
+            </span>
+            <span style={{ marginLeft: 8 }}>Processing...</span>
+          </>
+        ) : (
+          "Generate Proposal🔧"
+        )}
       </button>
 
       <div className="output-box">
-        <h2 className="output-title">Output 💬</h2>
+        <h2 className="output-title">Preview 💬</h2>
         <pre className="output-content">{output}</pre>
         {downloadUrl ? (
           <div style={{ marginTop: 12 }}>

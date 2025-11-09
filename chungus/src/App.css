@@ -7,7 +7,7 @@
 	align-items: center;
 	justify-content: center;
 	padding: 1.5rem; /* 24px */
-	background: linear-gradient(180deg,#f8fafc 0%, #ffffff 100%);
+	background: rgba(99,102,241,0.6);
 	position: relative; /* for decorative background shapes */
 	overflow: hidden;
 }
@@ -28,33 +28,7 @@
 		z-index: 1; /* sit above decorative background */
 }
 
-/* Decorative blurred shapes behind the card to add depth */
-.page::before {
-	content: "";
-	position: absolute;
-	inset: 0; /* cover the page area so multiple gradients can be positioned by background-position */
-	pointer-events: none;
-	filter: blur(120px);
-	opacity: 0.75;
-	z-index: 0;
-	background-repeat: no-repeat;
-	background-image:
-		radial-gradient(circle at 18% 18%, rgba(99,102,241,0.95) 0%, rgba(139,92,246,0.7) 35%, transparent 60%),
-		radial-gradient(circle at 82% 28%, rgba(56,189,248,0.9) 0%, rgba(96,165,250,0.55) 35%, transparent 60%),
-		radial-gradient(circle at 50% 78%, rgba(236,72,153,0.9) 0%, rgba(249,115,22,0.45) 35%, transparent 60%);
-	background-size: 900px 900px, 800px 800px, 700px 700px;
-	background-position: 18% 18%, 82% 28%, 50% 78%;
-}
-
-/* Scale the decorative blobs down on small screens */
-@media (max-width: 768px) {
-	.page::before {
-		background-size: 420px 420px, 360px 360px, 320px 320px;
-		filter: blur(90px);
-		opacity: 0.55;
-		background-position: 10% 8%, 90% 22%, 50% 82%;
-	}
-}
+/* Background simplified to a single translucent color (no blobs) */
 
 .uploader {
 	width: 100%;
@@ -115,6 +89,18 @@
 	background: #581c87; /* purple-700 */
 }
 
+/* Spinner for processing state (rotates the emoji) */
+@keyframes spin-emoji {
+	from { transform: rotate(0deg); }
+	to { transform: rotate(360deg); }
+}
+.spinner {
+	display: inline-block;
+	transform-origin: center;
+	animation: spin-emoji 900ms linear infinite;
+	will-change: transform;
+}
+
 .output-box {
   display: flex;
   flex-direction: column;
@@ -122,7 +108,7 @@
   align-content: center;
   margin-top: 1rem;
   width: 100%;
-  max-width: 40rem;
+  max-width: 43rem;
   background: #f3f4f6;
   padding: 1rem;
   border-radius: 0.5rem;
