@@ -66,12 +66,12 @@ export default function PdfUploader() {
         {downloadUrl ? (
           <div style={{ marginTop: 12 }}>
             <a
-              href={downloadUrl}
               className="primary-btn"
+              href={downloadUrl}
               target="_blank"
-              rel="noreferrer"
+              rel="noopener noreferrer"
             >
-              Download text
+              Download PDF
             </a>
           </div>
         ) : null}

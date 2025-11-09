@@ -13,8 +13,10 @@
     "@google/generative-ai": "^0.24.1",
     "cors": "^2.8.5",
     "express": "^5.1.0",
+    "marked": "^5.1.2",
     "multer": "^2.0.2",
     "pdfkit": "^0.13.0",
+    "puppeteer": "^24.29.1",
     "react": "^19.1.1",
     "react-dom": "^19.1.1"
   },

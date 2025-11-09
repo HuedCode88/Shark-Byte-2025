@@ -4,6 +4,7 @@ import fs from "fs";
 import os from "os";
 import path from "path";
 import crypto from "crypto";
+import { marked } from "marked";
 import PDFDocument from "pdfkit";
 import cors from "cors";
 import { GoogleGenerativeAI } from "@google/generative-ai";
@@ -104,31 +105,56 @@ Avoid redundancy and ensure flow between sections.
 
     const outputText = result.response.text();
 
-    // create a PDF from the outputText and return a download URL
+    // create a PDF from the outputText. Prefer Puppeteer (HTML rendering); fall back to PDFKit if Puppeteer isn't available.
     try {
       const filename = `reply-${Date.now()}-${crypto.randomUUID()}.pdf`;
       const tempDir = os.tmpdir();
       const tempPath = path.join(tempDir, filename);
 
-      // generate PDF using pdfkit
-      const doc = new PDFDocument({ size: "A4", margin: 50 });
-      const stream = fs.createWriteStream(tempPath);
-      doc.pipe(stream);
+      // Try to load puppeteer dynamically. If it's not installed, fall back to pdfkit.
+      let usedPuppeteer = false;
+      try {
+        const puppeteerMod = await import('puppeteer');
+        const puppeteer = puppeteerMod?.default || puppeteerMod;
+        if (puppeteer) {
+          usedPuppeteer = true;
+          const bodyHtml = marked.parse(outputText || "");
+          const html = `<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><style>
+            body{font-family: -apple-system, system-ui, 'Segoe UI', Roboto, 'Helvetica Neue', Arial; padding:24px; color:#111; line-height:1.45}
+            h1,h2,h3{color:#111}
+            pre{white-space:pre-wrap; font-family:monospace}
+            table{border-collapse:collapse}
+            table, th, td { border: 1px solid #ddd; padding: 6px }
+            </style></head><body>${bodyHtml}</body></html>`;
 
-      // optional heading
-      doc.fontSize(16).text("Generated reply", { align: "left" });
-      doc.moveDown();
+          const browser = await puppeteer.launch({ args: ['--no-sandbox', '--disable-setuid-sandbox'] });
+          const page = await browser.newPage();
+          await page.setContent(html, { waitUntil: 'networkidle0' });
+          await page.pdf({ path: tempPath, format: 'A4', printBackground: true });
+          await browser.close();
+        }
+      } catch (e) {
+        usedPuppeteer = false;
+      }
 
-      // write the main text with simple wrapping
-      doc.fontSize(11).text(outputText, { lineGap: 4 });
+      if (!usedPuppeteer) {
+        // Fallback: create simple PDF using PDFKit
+        const doc = new PDFDocument({ size: "A4", margin: 50 });
+        const stream = fs.createWriteStream(tempPath);
+        doc.pipe(stream);
 
-      doc.end();
+        doc.fontSize(16).text("Generated reply", { align: "left" });
+        doc.moveDown();
+        doc.fontSize(11).text(outputText || "", { lineGap: 4 });
 
-      // wait for stream to finish
-      await new Promise((resolve, reject) => {
-        stream.on("finish", resolve);
-        stream.on("error", reject);
-      });
+        doc.end();
+
+        // wait for stream to finish
+        await new Promise((resolve, reject) => {
+          stream.on("finish", resolve);
+          stream.on("error", reject);
+        });
+      }
 
       // schedule deletion after TTL (5 minutes)
       const TTL_MS = 5 * 60 * 1000;
@@ -139,7 +165,7 @@ Avoid redundancy and ensure flow between sections.
       const downloadUrl = `${req.protocol}://${req.get('host')}/temp/${encodeURIComponent(filename)}`;
       res.json({ output: outputText, downloadUrl });
     } catch (fileErr) {
-      console.warn("Could not write PDF file, returning inline output", fileErr?.message || fileErr);
+      console.warn("Could not create PDF, returning inline output", fileErr?.message || fileErr);
       res.json({ output: outputText });
     }
   } catch (err) {
