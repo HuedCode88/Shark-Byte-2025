@@ -57,7 +57,7 @@ export default function PdfUploader() {
         disabled={!templateFile || !dataFile || loading}
         className="primary-btn"
       >
-        {loading ? "Processing... 🌀" : "Generate Proposal🚀"}
+        {loading ? "Processing... 🌀" : "Generate Proposal🔧"}
       </button>
 
       <div className="output-box">
