@@ -4,6 +4,7 @@ import fs from "fs";
 import os from "os";
 import path from "path";
 import crypto from "crypto";
+import PDFDocument from "pdfkit";
 import cors from "cors";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
@@ -103,12 +104,31 @@ Avoid redundancy and ensure flow between sections.
 
     const outputText = result.response.text();
 
-    // write output to a temp file and return a download URL
+    // create a PDF from the outputText and return a download URL
     try {
-      const filename = `reply-${Date.now()}-${crypto.randomUUID()}.txt`;
+      const filename = `reply-${Date.now()}-${crypto.randomUUID()}.pdf`;
       const tempDir = os.tmpdir();
       const tempPath = path.join(tempDir, filename);
-      fs.writeFileSync(tempPath, outputText, "utf8");
+
+      // generate PDF using pdfkit
+      const doc = new PDFDocument({ size: "A4", margin: 50 });
+      const stream = fs.createWriteStream(tempPath);
+      doc.pipe(stream);
+
+      // optional heading
+      doc.fontSize(16).text("Generated reply", { align: "left" });
+      doc.moveDown();
+
+      // write the main text with simple wrapping
+      doc.fontSize(11).text(outputText, { lineGap: 4 });
+
+      doc.end();
+
+      // wait for stream to finish
+      await new Promise((resolve, reject) => {
+        stream.on("finish", resolve);
+        stream.on("error", reject);
+      });
 
       // schedule deletion after TTL (5 minutes)
       const TTL_MS = 5 * 60 * 1000;
@@ -119,7 +139,7 @@ Avoid redundancy and ensure flow between sections.
       const downloadUrl = `${req.protocol}://${req.get('host')}/temp/${encodeURIComponent(filename)}`;
       res.json({ output: outputText, downloadUrl });
     } catch (fileErr) {
-      console.warn("Could not write temp file, returning inline output", fileErr?.message || fileErr);
+      console.warn("Could not write PDF file, returning inline output", fileErr?.message || fileErr);
       res.json({ output: outputText });
     }
   } catch (err) {
